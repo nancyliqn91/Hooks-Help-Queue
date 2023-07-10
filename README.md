@@ -25,9 +25,10 @@
 
 * Go to https://github.com/nancyliqn91/Redux-Help-Queue to clone the GitHub repository.
 * Create a firebase account.
-* Create a .env file like below.
+* Create a .env file in the root directory like below.
 * In your terminal/command line, go into the folder that was cloned and run `npm install`, this will downloading all the package dependencies.
 * Next run `npm run start` to start the server. Once the server loads, the webpage should load automatically but if not type in the localhost route that your terminal shows like `https://localhost:3000`.
+* Run `firebase deploy --only hosting` and go to `https://hooks-help-queue.web.app` to see the website.
 
 ```
 .env
