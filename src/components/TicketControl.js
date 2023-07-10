@@ -3,9 +3,11 @@ import NewTicketForm from './NewTicketForm';
 import TicketList from './TicketList';
 import EditTicketForm from './EditTicketForm';
 import TicketDetail from './TicketDetail';
-import { collection, addDoc, doc, updateDoc, onSnapshot, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, onSnapshot, deleteDoc, query, orderBy } from "firebase/firestore";
+// import { db, auth } from './../firebase.js';
 import db from './../firebase.js';
 import auth from './../firebase.js';
+import { formatDistanceToNow } from 'date-fns';
 
 function TicketControl() {
   const [formVisibleOnPage, setFormVisibleOnPage] = useState(false);
@@ -14,23 +16,49 @@ function TicketControl() {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    function updateTicketElapsedWaitTime() {
+      const newMainTicketList = mainTicketList.map(ticket => {
+        const newFormattedWaitTime = formatDistanceToNow(ticket.timeOpen);
+        return {...ticket, formattedWaitTime: newFormattedWaitTime};
+      });
+      setMainTicketList(newMainTicketList);
+    }
+
+    const waitTimeUpdateTimer = setInterval(() =>
+      updateTicketElapsedWaitTime(), 
+      60000
+    );
+
+    return function cleanup() {
+      clearInterval(waitTimeUpdateTimer);
+    }
+  }, [mainTicketList])
+
   useEffect(() => { 
-    const unSubscribe = onSnapshot(
+    const queryByTimestamp = query(
       collection(db, "tickets"), 
-      (collectionSnapshot) => {
-        collection(db, "tickets"), 
-        (collectionSnapshot) => {
-          const tickets = [];
-          collectionSnapshot.forEach((doc) => {
-              tickets.push({
-                names: doc.data().names, 
-                location: doc.data().location, 
-                issue: doc.data().issue, 
-                id: doc.id
-              });
+      orderBy('timeOpen', 'desc')
+    );
+
+    const unSubscribe = onSnapshot(
+      queryByTimestamp, 
+      (querySnapshot) => {
+        const tickets = [];
+        querySnapshot.forEach((doc) => {
+          const timeOpen = doc.get('timeOpen', {serverTimestamps: "estimate"}).toDate();
+          const jsDate = new Date(timeOpen);
+
+          tickets.push({
+            names: doc.data().names, 
+            location: doc.data().location, 
+            issue: doc.data().issue, 
+            timeOpen: jsDate,
+            formattedWaitTime: formatDistanceToNow(jsDate),
+            id: doc.id
           });
-          setMainTicketList(tickets);
-        }
+        });
+        setMainTicketList(tickets);
       },
       (error) => {
         setError(error.message);
@@ -75,10 +103,7 @@ function TicketControl() {
   const handleChangingSelectedTicket = (id) => {
     const selection = mainTicketList.filter(ticket => ticket.id === id)[0];
     setSelectedTicket(selection); 
-  }
-
-  let currentlyVisibleState = null;
-  let buttonText = null; 
+  } 
 
   if (auth.currentUser == null) {
     return (
@@ -94,8 +119,10 @@ function TicketControl() {
     if (error) {
       currentlyVisibleState = <p>There was an error: {error}</p>
     }
-    else if (editing ) {      
-      currentlyVisibleState = <EditTicketForm ticket = {selectedTicket} onEditTicket = {handleEditingTicketInList} />
+    else if (editing) {      
+      currentlyVisibleState = <EditTicketForm 
+      ticket = {selectedTicket} 
+      onEditTicket = {handleEditingTicketInList} />
       buttonText = "Return to Ticket List";
     } else if (selectedTicket != null) {
       currentlyVisibleState = <TicketDetail 
@@ -107,7 +134,8 @@ function TicketControl() {
       currentlyVisibleState = <NewTicketForm onNewTicketCreation={handleAddingNewTicketToList}/>;
       buttonText = "Return to Ticket List"; 
     } else {
-      currentlyVisibleState = <TicketList onTicketSelection={handleChangingSelectedTicket} ticketList={mainTicketList} />;
+      currentlyVisibleState = <TicketList 
+      onTicketSelection={handleChangingSelectedTicket} ticketList={mainTicketList} />;
       buttonText = "Add Ticket"; 
     }
     return (

@@ -2,7 +2,7 @@
 
 #### By Qian Li 😊
 
-#### 🌸 An full CRUD application in React with hooks that tracks help queue with time stamp for wait time and hosted on firebase. 🌸
+#### 🌸 An full CRUD application in React with hooks and Firestore that tracks help queue with time stamp for wait time and hosted on firebase. 🌸
 
 ## 🌼 Technologies Used
 
@@ -28,6 +28,16 @@
 * Create a .env file like below.
 * In your terminal/command line, go into the folder that was cloned and run `npm install`, this will downloading all the package dependencies.
 * Next run `npm run start` to start the server. Once the server loads, the webpage should load automatically but if not type in the localhost route that your terminal shows like `https://localhost:3000`.
+
+```
+.env
+REACT_APP_FIREBASE_API_KEY = "YOUR-UNIQUE-CREDENTIALS"
+REACT_APP_FIREBASE_AUTH_DOMAIN = "YOUR-PROJECT-NAME.firebaseapp.com"
+REACT_APP_FIREBASE_PROJECT_ID = "YOUR-PROJECT-FIREBASE-PROJECT-ID"
+REACT_APP_FIREBASE_STORAGE_BUCKET = "YOUR-PROJECT-NAME.appspot.com"
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID = "YOUR-PROJECT-SENDER-ID"
+REACT_APP_FIREBASE_APP_ID = "YOUR-PROJECT-APP-ID"
+```
 
 ## 🌷 Known Bugs
 
